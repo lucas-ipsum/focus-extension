@@ -1,24 +1,23 @@
 // ### Settings ###
-const interval = 1; // interval in seconds
+const interval = 5; // interval in seconds
 
-// Event-Listener für das Öffnen eines neuen Tabs
 let countdownInterval;
 let remainingTime;
 let currentBlockListItem;
 
 const startBlackListTimer = (blackListObj) => {
-  console.log("Start countdown");
-  console.log(blackListObj);
-  remainingTime = blackListObj.remainingTime; // minutes to seconds
+  clearInterval(countdownInterval); // clear interval if still running
+  remainingTime = blackListObj.remainingTime; 
   currentBlockListItem = blackListObj;
+
+// start countdown interval 
   countdownInterval = setInterval(() => {
     remainingTime = remainingTime - interval;
     console.log(
-      `Du hast heute noch ${remainingTime / 60} Minuten auf ${blackListObj.url} übrig.`,
+      `Du hast heute noch ${remainingTime} Sekunden auf ${blackListObj.url} übrig.`,
     );
     if (remainingTime <= 0) {
       clearInterval(countdownInterval);
-      alert("Zeit abgelaufen!");
     }
   }, interval * 1000);
 };
@@ -32,38 +31,41 @@ const stopBlackListTimer = () => {
         pages[i].remainingTime = remainingTime;
       }
     }
-    console.log(pages);
-    remainingTime = null;
     browser.storage.local.set({ blackList: pages });
+    currentBlockListItem = null;
   });
 };
 
 const checkBlackList = (page) => {
   // get black list from local storage and check if currently viewed page is on list
   browser.storage.local.get("blackList").then((result) => {
-    result.blackList.forEach((element) => {
-      if (page.url.toLowerCase().includes(element.url.toLowerCase())) {
-        console.log("Blacklist");
-        if (element.remainingTime >= 0) {
-          startBlackListTimer(element);
-        }
-      } else {
-        // TODO check if currently blocked item if true -> stop list timer and reset blockItem to null
-        if (currentBlockListItem?.id) {
-          stopBlackListTimer();
+    if (!result.blackList) return;
+
+    const matchedItem = result.blackList.find((element) =>
+      page.url.toLowerCase().includes(element.url.toLowerCase()),
+    );
+
+    if (matchedItem) {
+      if (matchedItem.remainingTime >= 0) {
+        // only restart time if changed to different black list page
+        if (currentBlockListItem?.id !== matchedItem.id) {
+          startBlackListTimer(matchedItem);
         }
       }
-    });
+    } else {
+      // no match 
+      if (currentBlockListItem?.id) {
+        stopBlackListTimer();
+      }
+    }
   });
 };
 
 const updatePage = (page) => {
-  console.log(page);
   checkBlackList(page);
-  // browser.runtime.sendMessage(page)
 };
 
-// Wird ausgelöst, wenn sich der aktive Tab ändert
+// watch tab changes
 browser.tabs.onActivated.addListener((activeTab) => {
   // get current tab data
   browser.tabs.get(activeTab.tabId).then((tab) => {
@@ -75,9 +77,14 @@ browser.tabs.onActivated.addListener((activeTab) => {
 });
 
 // TODO also handfle url change in same tab
-// Tab-Änderungen überwachen
+// watch changes in active tab 
 browser.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
-  if (changeInfo.status === "complete" && !tab.url.toLowerCase().includes(currentBlockListItem.url)) {
+  if (
+    changeInfo.status === "complete" &&
+    tab.active &&
+    currentBlockListItem?.url &&
+    !tab.url.toLowerCase().includes(currentBlockListItem?.url)
+  ) {
     updatePage({
       id: tabId,
       url: tab.url,
@@ -85,14 +92,10 @@ browser.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
   }
 });
 
-browser.storage.local.get("blackList").then((result) => {
-  console.log("storage? ");
-  console.log(result);
-});
 
 // TODO implement reset logic every day at 24:00
 
-// TODO remove 
+// TODO remove
 const deleteStorage = () => {
   browser.storage.local.remove("blackList").then(() => {
     console.log("Schlüssel 'blackList' wurde gelöscht.");
@@ -100,3 +103,17 @@ const deleteStorage = () => {
 };
 
 // deleteStorage();
+
+// handle incoming request from popup script
+// background-script.js
+browser.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  console.log("Message received background");
+  console.log(request);
+  try {
+    if (request.msg === "getBlackListItem") {
+      sendResponse({ response: "pong" });
+    }
+  } catch (error) {
+    console.error("Fehler im onMessage-Listener:", error);
+  }
+});

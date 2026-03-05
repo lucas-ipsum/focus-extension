@@ -7,9 +7,9 @@ document.addEventListener("DOMContentLoaded", async () => {
   const tabInfoElement = document.getElementById("tab-info");
   tabInfoElement.innerHTML = `
             <p>${currentTab.title}</p>
-            <p>${currentTab}</p>
-
         `;
+  const res = await requestCurrentBlackListData();
+  console.log(res);
 });
 
 // elements
@@ -22,8 +22,8 @@ saveButton.addEventListener("click", () => {
     id: crypto.randomUUID(),
     url: pageInput.value.trim(),
     allowedDuration: 60 * 60,
-    remainingTime: 60 * 60
-};
+    remainingTime: 60 * 60,
+  };
   if (!newPage) {
     alert("Bitte geben Sie eine Seite ein!");
     return;
@@ -60,3 +60,14 @@ const getCurrentTab = async () => {
 // ## add current page to delete list ##
 const addCurrentPageToList = () => {};
 
+const requestCurrentBlackListData = async () => {
+  const sending = browser.runtime.sendMessage({ msg: "getBlackListItem" });
+  sending
+    .then((response) => {
+      console.log(response);
+      return response;
+    })
+    .catch((err) => {
+      console.error(err);
+    });
+};

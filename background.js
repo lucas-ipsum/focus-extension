@@ -13,6 +13,7 @@ const startBlackListTimer = (blackListObj) => {
   // start countdown interval
   countdownInterval = setInterval(() => {
     remainingTime = remainingTime - interval;
+    currentBlockListItem.remainingTime = remainingTime;
     console.log(
       `Du hast heute noch ${remainingTime} Sekunden auf ${blackListObj.url} übrig.`,
     );
@@ -76,7 +77,6 @@ browser.tabs.onActivated.addListener((activeTab) => {
   });
 });
 
-
 // TODO also handfle url change in same tab
 // watch changes in active tab
 browser.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
@@ -111,7 +111,7 @@ browser.runtime.onMessage.addListener((request, sender, sendResponse) => {
   console.log(request);
   try {
     if (request.msg === "getBlackListItem") {
-      sendResponse({ response: "pong" });
+      sendResponse(currentBlockListItem);
     }
   } catch (error) {
     console.error("Fehler im onMessage-Listener:", error);

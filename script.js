@@ -5,11 +5,29 @@ document.addEventListener("DOMContentLoaded", async () => {
   let currentTab = await getCurrentTab();
   console.log(currentTab);
   const tabInfoElement = document.getElementById("tab-info");
+  const blackListItemEl = document.getElementById("black-list-item");
+
   tabInfoElement.innerHTML = `
             <p>${currentTab.title}</p>
         `;
   const res = await requestCurrentBlackListData();
   console.log(res);
+  if (res) {
+    blackListItemEl.innerHTML = `
+        <p>${formatTime(res.remainingTime)}</p>
+    `;
+    let remainingTime = res.remainingTime;
+
+    const updateInterval = setInterval(() => {
+      remainingTime--;
+      blackListItemEl.innerHTML = `
+        <p>${formatTime(remainingTime)}</p>
+    `;
+      if (remainingTime <= 0) {
+        clearInterval(updateInterval);
+      }
+    }, 1000);
+  }
 });
 
 // elements
@@ -61,13 +79,24 @@ const getCurrentTab = async () => {
 const addCurrentPageToList = () => {};
 
 const requestCurrentBlackListData = async () => {
-  const sending = browser.runtime.sendMessage({ msg: "getBlackListItem" });
-  sending
-    .then((response) => {
-      console.log(response);
-      return response;
-    })
-    .catch((err) => {
-      console.error(err);
-    });
+  try {
+    const res = await browser.runtime.sendMessage({ msg: "getBlackListItem" });
+    return res;
+  } catch (err) {
+    console.error(err);
+  }
 };
+
+function formatTime(seconds) {
+  const hours = Math.floor(seconds / 3600);
+  const remainingSeconds = seconds % 3600;
+  const minutes = Math.floor(remainingSeconds / 60);
+  const secs = remainingSeconds % 60;
+
+  const paddedHours = hours.toString().padStart(2, "0");
+  const paddedMinutes = minutes.toString().padStart(2, "0");
+  const paddedSeconds = secs.toString().padStart(2, "0");
+
+  // format "h:mm:ss"
+  return `${paddedHours}:${paddedMinutes}:${paddedSeconds}`;
+}

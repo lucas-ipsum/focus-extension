@@ -7,10 +7,10 @@ let currentBlockListItem;
 
 const startBlackListTimer = (blackListObj) => {
   clearInterval(countdownInterval); // clear interval if still running
-  remainingTime = blackListObj.remainingTime; 
+  remainingTime = blackListObj.remainingTime;
   currentBlockListItem = blackListObj;
 
-// start countdown interval 
+  // start countdown interval
   countdownInterval = setInterval(() => {
     remainingTime = remainingTime - interval;
     console.log(
@@ -53,7 +53,7 @@ const checkBlackList = (page) => {
         }
       }
     } else {
-      // no match 
+      // no match
       if (currentBlockListItem?.id) {
         stopBlackListTimer();
       }
@@ -76,22 +76,22 @@ browser.tabs.onActivated.addListener((activeTab) => {
   });
 });
 
+
 // TODO also handfle url change in same tab
-// watch changes in active tab 
+// watch changes in active tab
 browser.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
-  if (
-    changeInfo.status === "complete" &&
-    tab.active &&
-    currentBlockListItem?.url &&
-    !tab.url.toLowerCase().includes(currentBlockListItem?.url)
-  ) {
-    updatePage({
-      id: tabId,
-      url: tab.url,
-    });
+  if (tab.status === "complete") {
+    if (
+      tab.active &&
+      !tab.url.toLowerCase().includes(currentBlockListItem?.url)
+    ) {
+      updatePage({
+        id: tabId,
+        url: tab.url,
+      });
+    }
   }
 });
-
 
 // TODO implement reset logic every day at 24:00
 

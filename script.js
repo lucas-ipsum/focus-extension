@@ -6,6 +6,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   console.log(currentTab);
   const tabInfoElement = document.getElementById("tab-info");
   const blackListItemEl = document.getElementById("black-list-item");
+  const blackListEl = document.getElementById("black-list");
 
   tabInfoElement.innerHTML = `
             <p>${currentTab.title}</p>
@@ -28,13 +29,33 @@ document.addEventListener("DOMContentLoaded", async () => {
       }
     }, 1000);
   }
+
+  // load black list elements from storage
+  browser.storage.local.get("blackList").then((result) => {
+    console.log(result);
+    blackListEl.innerHTML = result.blackList.map(
+      (item) => `<li>${item.url}</li>`,
+    );
+  });
 });
+
+// load blacklist elements
+const navigate = (pageId) => {
+  document
+    .querySelectorAll("[id^='page-']")
+    .forEach((p) => p.classList.add("hidden"));
+  document.getElementById(pageId).classList.remove("hidden");
+};
 
 // elements
 const saveButton = document.getElementById("saveButton");
 const pageInput = document.getElementById("page");
+const homeBtn = document.getElementById("home-btn");
+const listBtn = document.getElementById("list-btn");
 
 // Daten zur Liste hinzufügen
+
+// handle add url to blacklist
 saveButton.addEventListener("click", () => {
   const newPage = {
     id: crypto.randomUUID(),
@@ -55,6 +76,15 @@ saveButton.addEventListener("click", () => {
       pageInput.value = "";
     });
   });
+});
+
+// handle click home btn
+homeBtn.addEventListener("click", () => {
+  navigate("page-home");
+});
+// handle click list btn
+listBtn.addEventListener("click", () => {
+  navigate("page-blacklist");
 });
 
 const getCurrentTab = async () => {

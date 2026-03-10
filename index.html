@@ -8,14 +8,25 @@
   </head>
   <body>
     <h1>Stay focused!</h1>
-    <p id="tab-info"></p>
-    <div id="black-list-item">
-
-    </div>
-    <div>
+    <nav>
+      <button id="home-btn">Home</button>
+      <button id="list-btn">Liste</button>
+    </nav>
+    <!-- Home Page -->
+    <div id="page-home">
+      <p id="tab-info"></p>
+      <div id="black-list-item"></div>
+      <div>
         <label for="page">Seite</label>
-        <input id="page" type="text">
+        <input id="page" type="text" />
         <button id="saveButton">Speichern</button>
+      </div>
+    </div>
+
+    <!-- List Page -->
+    <div class="hidden" id="page-blacklist">
+      <h2>Blacklist</h2>
+      <ul id="black-list"></ul>
     </div>
   </body>
   <script src="./script.js"></script>

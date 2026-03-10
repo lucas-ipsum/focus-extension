@@ -1,8 +1,30 @@
 body {
-    background-color: #1c1b22;
-    min-width: 300px;
-    min-height: 450px;
-    font-family: 'Courier New', Courier, monospace;
-    color: white; 
+  background-color: #1c1b22;
+  min-width: 300px;
+  min-height: 450px;
+  font-family: "Courier New", Courier, monospace;
+  color: white;
 }
 
+.hidden {
+  display: none;
+}
+
+button {
+  background-color: #1c1b22;
+  cursor: pointer;
+  color: white;
+  padding: 6px;
+  font-size: larger;
+  border: none;
+}
+
+button:hover {
+  color: lightgrey;
+  box-shadow: 0 -1px 0 lightgrey inset;
+}
+
+.active-link {
+    box-shadow: 0 -1px 0 white inset;
+    font-weight: 600;
+}

@@ -14,12 +14,16 @@ document.addEventListener("DOMContentLoaded", async () => {
   const res = await requestCurrentBlackListData();
   console.log(res);
   if (res) {
-    blackListItemEl.innerHTML = `
+    blackListItemEl.innerHTML =
+      res.remainingTime >= 0
+        ? `
         <p>${formatTime(res.remainingTime)}</p>
-    `;
+    `
+        : `<p>Die Zeit ist für heute aufgebraucht!</p>`;
     let remainingTime = res.remainingTime;
 
     const updateInterval = setInterval(() => {
+      if (remainingTime <= 0) return;
       remainingTime--;
       blackListItemEl.innerHTML = `
         <p>${formatTime(remainingTime)}</p>
@@ -34,7 +38,18 @@ document.addEventListener("DOMContentLoaded", async () => {
   browser.storage.local.get("blackList").then((result) => {
     console.log(result);
     blackListEl.innerHTML = result.blackList.map(
-      (item) => `<li>${item.url}</li>`,
+      (item) => `
+      <tr>
+        <td>${item.url}</td>
+        <td>${formatTime(item.allowedDuration)}</td>
+        <td>          
+          <button class="edit-btn" data-id="${item.id}">✏️</button>
+        </td>
+        <td>
+          <button class="delete-btn" data-id="${item.id}">🗑️</button>
+        </td>
+      </tr>
+        `,
     );
   });
 });

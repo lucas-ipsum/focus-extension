@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Deine Erweiterung",
   "version": "1.0",
-  "permissions": ["tabs", "scripting", "storage"],
+  "permissions": ["tabs", "scripting", "storage", "alarms"],
   "host_permissions": ["<all_urls>"],
   "background": {
     "scripts": ["background.js"]

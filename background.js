@@ -45,13 +45,15 @@ const checkBlackList = (page) => {
     const matchedItem = result.blackList.find((element) =>
       page.url.toLowerCase().includes(element.url.toLowerCase()),
     );
-
+    console.log(matchedItem);
     if (matchedItem) {
       if (matchedItem.remainingTime >= 0) {
         // only restart time if changed to different black list page
         if (currentBlockListItem?.id !== matchedItem.id) {
           startBlackListTimer(matchedItem);
         }
+      } else if (matchedItem.remainingTime <= 0) {
+        currentBlockListItem = matchedItem;
       }
     } else {
       // no match
@@ -117,3 +119,39 @@ browser.runtime.onMessage.addListener((request, sender, sendResponse) => {
     console.error("Fehler im onMessage-Listener:", error);
   }
 });
+
+// reset timer
+const resetDailyLimit = () => {
+  browser.storage.local.get("blackList").then((result) => {
+    const pages = result.blackList || [];
+    for (let i = 0; i < pages.length; i++) {
+      pages[i].remainingTime = pages[i].allowedDuration;
+    }
+    browser.storage.local.set({ blackList: pages });
+  });
+};
+
+const getNext6AM = () => {
+  const now = new Date();
+  const next6AM = new Date();
+  next6AM.setHours(6, 0, 0, 0);
+
+  // Falls 6 Uhr heute schon vorbei ist, auf morgen setzen
+  if (now >= next6AM) {
+    next6AM.setDate(next6AM.getDate() + 1);
+  }
+
+  return next6AM.getTime();
+};
+
+browser.alarms.create("dailyReset", {
+  when: getNext6AM(),
+  periodInMinutes: 24 * 60
+});
+
+browser.alarms.onAlarm.addListener((alarm) => {
+  if (alarm.name === "dailyReset") {
+    resetDailyLimit();
+  }
+});
+

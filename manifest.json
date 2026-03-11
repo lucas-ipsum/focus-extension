@@ -15,5 +15,11 @@
       "matches": ["<all_urls>"],
       "js": ["script.js"]
     }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["blocked.html"],
+      "matches": ["<all_urls>"]
+    }
   ]
 }

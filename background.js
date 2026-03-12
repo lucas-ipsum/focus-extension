@@ -25,6 +25,7 @@ const startBlackListTimer = (blackListObj) => {
 
 const stopBlackListTimer = () => {
   clearInterval(countdownInterval);
+  if (!currentBlockListItem) return; 
   browser.storage.local.get("blackList").then((result) => {
     const pages = result.blackList || [];
     for (let i = 0; i < pages.length; i++) {
@@ -38,6 +39,7 @@ const stopBlackListTimer = () => {
 };
 
 const checkBlackList = (page) => {
+  if (!page?.url) return;
   // get black list from local storage and check if currently viewed page is on list
   browser.storage.local.get("blackList").then((result) => {
     if (!result.blackList) return;
@@ -95,7 +97,16 @@ browser.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
   }
 });
 
-// TODO implement reset logic every day at 24:00
+browser.windows.onFocusChanged.addListener((windowId) => {
+  if (windowId === browser.windows.WINDOW_ID_NONE) {
+    // no current focus
+    stopBlackListTimer();
+  }
+  browser.tabs.query({ active: true, windowId }).then(([tab]) => {
+    console.log("Aktiver Tab im fokussierten Fenster:", tab);
+    checkBlackList(tab);
+  });
+});
 
 // TODO remove
 const deleteStorage = () => {
@@ -122,6 +133,7 @@ browser.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
 // reset timer
 const resetDailyLimit = () => {
+  console.log("reset daily limit");
   browser.storage.local.get("blackList").then((result) => {
     const pages = result.blackList || [];
     for (let i = 0; i < pages.length; i++) {
@@ -146,7 +158,7 @@ const getNext6AM = () => {
 
 browser.alarms.create("dailyReset", {
   when: getNext6AM(),
-  periodInMinutes: 24 * 60
+  periodInMinutes: 24 * 60,
 });
 
 browser.alarms.onAlarm.addListener((alarm) => {
@@ -154,4 +166,3 @@ browser.alarms.onAlarm.addListener((alarm) => {
     resetDailyLimit();
   }
 });
-

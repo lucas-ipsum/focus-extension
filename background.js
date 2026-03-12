@@ -5,27 +5,33 @@ let countdownInterval;
 let remainingTime;
 let currentBlockListItem;
 
-const startBlackListTimer = (blackListObj) => {
+const startBlackListTimer = async (blackListObj) => {
   clearInterval(countdownInterval); // clear interval if still running
   remainingTime = blackListObj.remainingTime;
   currentBlockListItem = blackListObj;
 
   // start countdown interval
-  countdownInterval = setInterval(() => {
+  countdownInterval = setInterval(async () => {
     remainingTime = remainingTime - interval;
     currentBlockListItem.remainingTime = remainingTime;
     console.log(
       `Du hast heute noch ${remainingTime} Sekunden auf ${blackListObj.url} übrig.`,
     );
+
     if (remainingTime <= 0) {
+      console.log("Daily limit reached:");
       clearInterval(countdownInterval);
+      const currentTab = await getCurrentTab();
+      await browser.tabs.update(currentTab.id, {
+        url: `blocked.html?id=${blackListObj.id}`,
+      });
     }
   }, interval * 1000);
 };
 
 const stopBlackListTimer = () => {
   clearInterval(countdownInterval);
-  if (!currentBlockListItem) return; 
+  if (!currentBlockListItem) return;
   browser.storage.local.get("blackList").then((result) => {
     const pages = result.blackList || [];
     for (let i = 0; i < pages.length; i++) {
@@ -166,3 +172,21 @@ browser.alarms.onAlarm.addListener((alarm) => {
     resetDailyLimit();
   }
 });
+
+const getCurrentTab = async () => {
+  try {
+    const tabs = await browser.tabs.query({
+      active: true,
+      currentWindow: true,
+    });
+
+    if (tabs && tabs.length > 0) {
+      const currentTab = tabs[0];
+      return currentTab;
+    } else {
+      console.error("Kein aktiver Tab gefunden.");
+    }
+  } catch (error) {
+    console.error("Fehler beim Abrufen des Tabs:", error);
+  }
+};

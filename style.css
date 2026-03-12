@@ -25,6 +25,29 @@ button:hover {
 }
 
 .active-link {
-    box-shadow: 0 -1px 0 white inset;
-    font-weight: 600;
+  box-shadow: 0 -1px 0 white inset;
+  font-weight: 600;
+}
+
+.time-input-section {
+  text-align: center;
+  margin-bottom: 3px;
+}
+
+.time-input {
+  width: 50px;
+  padding: 5px;
+  text-align: center;
+  font-size: large;
+}
+
+input[type="number"] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+.page {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }

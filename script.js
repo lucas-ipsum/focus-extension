@@ -3,6 +3,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   // TODO remove
   // display current tab
   let currentTab = await getCurrentTab();
+  let currentDetailEl;
   console.log(currentTab);
   const tabInfoElement = document.getElementById("tab-info");
   const blackListItemEl = document.getElementById("black-list-item");
@@ -51,6 +52,22 @@ document.addEventListener("DOMContentLoaded", async () => {
       </tr>
         `,
     );
+
+    // Event Listener nach dem Rendern setzen
+    document.querySelectorAll(".delete-btn").forEach((btn) => {
+      btn.addEventListener("click", (e) => {
+        const id = e.target.dataset.id;
+        // deleteBlackListItem(id);
+      });
+    });
+
+    document.querySelectorAll(".edit-btn").forEach((btn) => {
+      btn.addEventListener("click", (e) => {
+        console.log("button clicked");
+        const id = e.target.dataset.id;
+        editBlackListItem(id);
+      });
+    });
   });
 });
 
@@ -67,6 +84,9 @@ const saveButton = document.getElementById("saveButton");
 const pageInput = document.getElementById("page");
 const homeBtn = document.getElementById("home-btn");
 const listBtn = document.getElementById("list-btn");
+const elUrl = document.getElementById("el-url");
+const elHours = document.getElementById("el-hours");
+const elMinutes = document.getElementById("el-minutes");
 
 // Daten zur Liste hinzufügen
 
@@ -132,16 +152,50 @@ const requestCurrentBlackListData = async () => {
   }
 };
 
-function formatTime(seconds) {
+const editBlackListItem = (id) => {
+  browser.storage.local.get("blackList").then((result) => {
+    currentDetailEl = result.blackList.find((el) => el.id === id);
+    console.log(id);
+    console.log(currentDetailEl);
+    if (currentDetailEl) {
+      // Element gefunden, z.B. Edit-Form befüllen
+      document.getElementById("el-url").value = currentDetailEl.url;
+      document.getElementById("el-hours").value = formatTime(
+        currentDetailEl.allowedDuration,
+        "hours",
+      );
+      document.getElementById("el-minutes").value = formatTime(
+        currentDetailEl.allowedDuration,
+        "minutes",
+      );
+      navigate("page-detail");
+    }
+  });
+};
+
+function formatTime(seconds, format = "full") {
   const hours = Math.floor(seconds / 3600);
   const remainingSeconds = seconds % 3600;
   const minutes = Math.floor(remainingSeconds / 60);
   const secs = remainingSeconds % 60;
 
-  const paddedHours = hours.toString().padStart(2, "0");
-  const paddedMinutes = minutes.toString().padStart(2, "0");
-  const paddedSeconds = secs.toString().padStart(2, "0");
+  const pad = (n) => n.toString().padStart(2, "0");
 
-  // format "h:mm:ss"
-  return `${paddedHours}:${paddedMinutes}:${paddedSeconds}`;
+  switch (format) {
+    case "seconds":
+      return `${pad(secs)}`;
+
+    case "minutes":
+      return `${pad(minutes)}`;
+
+    case "hours":
+      return `${pad(hours)}`;
+
+    case "hours-minutes":
+      return `${pad(hours)}:${pad(minutes)}`;
+
+    case "full":
+    default:
+      return `${pad(hours)}:${pad(minutes)}:${pad(secs)}`;
+  }
 }

@@ -27,9 +27,21 @@
     <div class="hidden" id="page-blacklist">
       <h2>Blacklist</h2>
       <table>
-        <tbody id="black-list">
-        </tbody>
+        <tbody id="black-list"></tbody>
       </table>
+    </div>
+
+    <!-- Detail Page -->
+    <div class="hidden" id="page-detail">
+      <div class="page">
+        <h2 id="el-url"></h2>
+        <p>Tägliches Zeitlimit (hh:mm)</p>
+        <div class="time-input-section">
+          <input class="time-input" id="el-hours" type="number" /> :
+          <input class="time-input" id="el-minutes" type="numer" />
+        </div>
+        <button id="submit-time">Speichern</button>
+      </div>
     </div>
   </body>
   <script src="./script.js"></script>

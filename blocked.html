@@ -6,8 +6,15 @@
     <title>Blockiert</title>
   </head>
   <body>
-    Du hast dein tägliches Limit erreicht!!!
-    <span id="current-url"></span>
+    <h2>
+      Du hast dein tägliches Limit für
+      <span id="current-url"></span>
+      erreicht!!!
+    </h2>
+    <div>
+      <p>Das tägliche Limit beträgt:</p>
+      <span id="daily-timelimit"></span>
+    </div>
   </body>
 </html>
 
@@ -16,7 +23,20 @@
     background-color: #1c1b22;
     font-family: "Courier New", Courier, monospace;
     color: white;
+    text-align: center;
+  }
+
+  #current-url {
+    text-decoration: underline;
+    font-size: larger;
+  }
+
+  #daily-timelimit {
+    font-size: larger;
+    border: 1px white solid;
+    padding: 8px;
+    border-radius: 5px;
   }
 </style>
 
-<script src="blocked.js"></script>
+<script type="module" src="blocked.js"></script>
